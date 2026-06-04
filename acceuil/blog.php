@@ -1,9 +1,4 @@
 <?php
-// ============================================================
-//  blog.php — Le Mag' Yoon bu Gaw
-//  Dépendances : ../includes/header.php · ../includes/footer.php
-// ============================================================
-
 session_start();
 $is_logged_in = isset($_SESSION['user_id']);
 
