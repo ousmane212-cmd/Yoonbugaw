@@ -2,7 +2,7 @@
 session_start();
 $is_logged_in = isset($_SESSION['user_id']);
 
-// ── Catégories disponibles ───────────────────────────────────
+// ── Catégories disponibles ──────────────────────────────────
 $categories = [
     'Tout'         => 48,
     'Conseils'     => 18,
