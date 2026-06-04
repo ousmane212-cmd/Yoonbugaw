@@ -15,7 +15,7 @@
 
             <!-- Logo -->
             <div class="col-lg-4">
-                <img src="assets/images/logo.png" alt="Yoon bu Gaw" class="footer-logo">
+                <img src="../assets/images/logo.png" alt="Yoon bu Gaw" class="footer-logo">
 
                 <p class="footer-about">
                     Yoon bu Gaw est votre plateforme de mobilité intelligente au Sénégal.
