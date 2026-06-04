@@ -79,7 +79,7 @@ $vehiculesJson = json_encode($vehiculesByType, JSON_UNESCAPED_UNICODE);
 <body>
 <div class="layout">
 
-<?php include_once "haeder.php"; ?>
+<?php include_once "header.php"; ?>
 
   <!-- MAIN -->
   <main class="main-content" style="padding-top:24px">
