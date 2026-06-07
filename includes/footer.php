@@ -34,11 +34,11 @@
             <div class="col-lg-2 col-md-6">
                 <h5 class="footer-title">Navigation</h5>
                 <ul class="footer-links">
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="acceuil/services.php">Services</a></li>
-                    <li><a href="acceuil/about.php">À propos</a></li>
-                    <li><a href="acceuil/blog.php">Blog</a></li>
-                    <li><a href="acceuil/contact.php">Contact</a></li>
+                    <li><a href="#">Accueil</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Contact</a></li>
                 </ul>
             </div>
 

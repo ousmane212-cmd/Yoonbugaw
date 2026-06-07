@@ -81,7 +81,7 @@ $vehiculesJson = json_encode($vehiculesByType, JSON_UNESCAPED_UNICODE);
 <button class="menu-toggle" onclick="toggleSidebar()">
   <i class="bi bi-list"></i>
 </button>
-  <!-- SIDEBAR -->
+ 
   <aside class="sidebar">
     <div class="sidebar-header">
      
