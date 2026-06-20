@@ -4,16 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yoon bu Gaw | La route qui nous rapproche</title>
+    <title>Yoon bu Gaw  La route qui nous rapproche</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
     <link rel="stylesheet" href="acceuil/style.css">
        
 </head>
 <body>
 
-<!-- ═══ BANNIÈRE PROMOTIONNELLE ═══ -->
 <div class="promo-banner" id="promoBanner">
     <div class="container">
         <div class="promo-inner">
@@ -46,7 +47,7 @@
     </div>
 </div>
 
-<!-- ═══ NAVBAR ═══ -->
+
 <nav class="navbar navbar-expand-lg sticky-top">
     <div class="container">
         <a class="brand-wrap navbar-brand" href="index.php">
@@ -93,13 +94,14 @@
                     Yoon bu Gaw vous accompagne au quotidien pour tous vos déplacements, livraisons et locations de véhicules partout au Sénégal.
                 </p>
                 <div class="d-flex flex-wrap gap-3 mb-4">
-                    <button class="btn-primary-hero gated-link" data-href="auth/login.php">
-                        Réserver maintenant <i class="fa-solid fa-circle-arrow-right"></i>
-                    </button>
-                    <button class="btn-secondary-hero gated-link" data-href="auth/login.php">
-                        <i class="fa-solid fa-car"></i> Louer un véhicule
-                    </button>
-                </div>
+    <a href="auth/login.php" class="btn-primary-hero">
+        Réserver maintenant <i class="fa-solid fa-circle-arrow-right"></i>
+    </a>
+
+    <a href="auth/login.php" class="btn-secondary-hero">
+        <i class="fa-solid fa-car"></i> Louer un véhicule
+    </a>
+</div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="avatar-stack">
                         <div class="av"><img src="assets/images/p1.jpg" alt="" onerror="this.style.background='#CBD5E1'"></div>
@@ -135,7 +137,7 @@
                             <div class="svc-icon ic-green"><i class="fa-solid fa-user-group"></i></div>
                             <h5>Covoiturage</h5>
                             <p>Déplacements sûrs et confortables partout en ville et entre villes.</p>
-                            <a href="#" class="svc-link g gated-link" data-href="user/reserver_covoiturage.php">Réserver →</a>
+                            <a href="#" class="svc-link g gated-link" data-href="auth/login.php">Réserver →</a>
                         </div>
                     </div>
                     <div class="col-md-3 col-6">
@@ -238,17 +240,14 @@
             </div>
         </section>
 
-    </div><!-- /central-content -->
+    </div>
 
-    <!-- MAQUETTE TÉLÉPHONE -->
+   
     <div class="phone-col d-none d-lg-flex">
         <img src="assets/images/phone.png" alt="Application mobile Yoon bu Gaw">
     </div>
-</div><!-- /central-wrap -->
+</div>
 
-<!-- ═══════════════════════════════════════════════
-     1. SECTION TÉMOIGNAGES
-═══════════════════════════════════════════════ -->
 <section class="testimonials-section">
     <div class="container">
         <p class="section-label text-center mb-2">Ce qu'ils disent</p>
@@ -263,10 +262,10 @@
                         "Yoon bu Gaw a vraiment changé ma façon de me déplacer à Dakar. Rapide, fiable et les chauffeurs sont toujours très courtois. Je recommande vivement !"
                     </p>
                     <div class="testi-author">
-                        <div class="testi-av">AF</div>
+                        <div class="testi-av">CNM</div>
                         <div>
-                            <div class="testi-name">Aminata Faye <span class="testi-tag">Covoiturage</span></div>
-                            <div class="testi-role">Employée de banque, Dakar</div>
+                            <div class="testi-name">Cheikh ndiguel Mbengue <span class="testi-tag">Covoiturage</span></div>
+                            <div class="testi-role">Employé de banque, Dakar</div>
                         </div>
                     </div>
                 </div>
@@ -360,9 +359,7 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════
-     2. SECTION BLOG / ACTUALITÉS
-═══════════════════════════════════════════════ -->
+
 <section class="blog-section">
     <div class="container">
         <p class="section-label text-center mb-2">Blog & Actualités</p>
@@ -431,9 +428,7 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════
-     3. SECTION PARTENAIRES / LOGOS
-═══════════════════════════════════════════════ -->
+
 <section class="partners-section">
     <div class="container">
         <p class="section-label text-center mb-2">Ils nous font confiance</p>
@@ -463,9 +458,7 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════
-     4. SECTION TÉLÉCHARGEMENT APPLICATION
-═══════════════════════════════════════════════ -->
+
 <section class="app-section">
     <div class="container">
         <div class="row g-5 align-items-center">
@@ -568,7 +561,7 @@
         });
     });
 
-    // ── Compte à rebours bannière promo ──
+  
     (function() {
         let total = 12 * 3600 + 45 * 60; // 12h45m en secondes
         const h = document.getElementById('cdH');
@@ -587,5 +580,26 @@
         }, 1000);
     })();
 </script>
+<script>
+document.querySelectorAll('.gated-link').forEach(element => {
+    element.addEventListener('click', function(e) {
+        e.preventDefault(); // empêche le comportement du href="#"
+
+        const url = this.dataset.href;
+        if (url) {
+            window.location.href = url;
+        }
+    });
+});
+</script>
+ <script>
+        // Enregistrement du service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log('Service Worker enregistré !'))
+                .catch(err => console.log('Erreur Service Worker :', err));
+        }
+    </script>
+
 </body>
 </html>
