@@ -2,23 +2,15 @@
 session_start();
 require_once "../config/database.php";
 
-/* =========================
-   SÉCURITÉ ADMIN
-========================= */
 if (empty($_SESSION['id']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: ../auth/login.php');
     exit;
 }
 
-/* =========================
-   VARIABLES
-========================= */
+
 $msg = '';
 $erreur = '';
 
-/* =========================
-   AJOUT CHAUFFEUR
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add') {
 
     $nom        = trim($_POST['nom'] ?? '');
@@ -77,9 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add')
     }
 }
 
-/* =========================
-   MODIFICATION
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'edit') {
 
     $id         = (int)($_POST['id'] ?? 0);
@@ -130,9 +119,7 @@ WHERE id=? AND role='chauffeur'
     }
 }
 
-/* =========================
-   SUPPRESSION
-========================= */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
 
     $id = (int)($_POST['id'] ?? 0);
@@ -146,9 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     }
 }
 
-/* =========================
-   FILTRES
-========================= */
+
 $search = $_GET['search'] ?? '';
 $statut_filtre = $_GET['statut'] ?? '';
 
@@ -172,9 +157,6 @@ $stmt->execute($params);
 
 $chauffeurs = $stmt->fetchAll();
 
-/* =========================
-   KPI
-========================= */
 $countTotal = count($chauffeurs);
 $countActif = 0;
 $countOccupe = 0;
@@ -211,6 +193,7 @@ foreach ($chauffeurs as $c) {
 
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap"
           rel="stylesheet">
+          <link rel="stylesheet" href="style.css">
 
     <style>
 
@@ -489,8 +472,9 @@ include_once "sidebar.php";
 
 <!-- MAIN -->
 <div class="main-content">
+    
 
-  <!-- Admin Header -->
+ 
 
 <div class="container">
 

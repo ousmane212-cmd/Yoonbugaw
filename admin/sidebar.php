@@ -17,9 +17,9 @@
     <a href="vehicules.php"><i class="bi bi-car-front-fill"></i> Véhicules</a>
     <a href="reservations.php"><i class="bi bi-calendar-check"></i> Réservations</a>
     
-    <a href="locations.php"><i class="bi bi-car-front"></i> Locations</a>
-    <a href="rapports.php"><i class="bi bi-bar-chart"></i> Rapports</a>
-    <a href="paiements.php"><i class="bi bi-credit-card"></i> Paiements</a>
+    <a href="#"><i class="bi bi-car-front"></i> Locations</a>
+    <a href="#"><i class="bi bi-bar-chart"></i> Rapports</a>
+    <a href="#"><i class="bi bi-credit-card"></i> Paiements</a>
     <a href="../auth/logout.php" style="margin-top:auto">
       <i class="bi bi-box-arrow-right"></i> Déconnexion
     </a>

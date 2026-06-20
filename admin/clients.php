@@ -7,11 +7,6 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| ACTIONS
-|--------------------------------------------------------------------------
-*/
 
 $success = "";
 
@@ -22,7 +17,7 @@ if (isset($_POST['add_client'])) {
     $telephone = $_POST['telephone'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-    /* CHECK EMAIL */
+   
     $check = $pdo->prepare("SELECT id FROM users WHERE email=?");
     $check->execute([$email]);
 
@@ -73,7 +68,7 @@ if (isset($_GET['delete'])) {
     $success = "Client supprimé.";
 }
 
-/* BLOCK */
+
 if (isset($_GET['block'])) {
 
     $id = $_GET['block'];
@@ -85,7 +80,7 @@ if (isset($_GET['block'])) {
     $stmt->execute([$new,$id]);
 }
 
-/* SEARCH */
+
 $search = $_GET['search'] ?? '';
 
 if ($search) {
@@ -113,7 +108,7 @@ if ($search) {
 
 <link rel="stylesheet" href="style.css">
 <style>
-  /* Style spécifique pour harmoniser les miniatures d'images dans le tableau */
+  
   .table td img {
     width: 40px;
     height: 40px;

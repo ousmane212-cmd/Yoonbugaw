@@ -1,4 +1,3 @@
- 
 <?php
 session_start();
 require_once "../config/database.php";
@@ -10,19 +9,16 @@ if (!isset($_SESSION['id'])) {
 
 $adminName = $_SESSION['nom'] ?? "Admin";
 
-/* ════════════════════════════════════════
-   STATS PRINCIPALES
-════════════════════════════════════════ */
 $totalReservations = $pdo->query("
     SELECT COUNT(*) FROM reservations
 ")->fetchColumn() ?? 0;
 
-/* Revenus depuis reservations (pas paiements) */
 $totalRevenus = $pdo->query("
     SELECT COALESCE(SUM(montant), 0)
     FROM reservations
-    WHERE statut NOT IN ('annulé','annule')
+    WHERE statut NOT IN ('annulé','annule','en attente')
 ")->fetchColumn() ?? 0;
+
 
 $totalChauffeurs = $pdo->query("
     SELECT COUNT(*) FROM users WHERE role = 'chauffeur'
@@ -40,19 +36,57 @@ $totalPending = $pdo->query("
     SELECT COUNT(*) FROM reservations WHERE statut = 'en attente'
 ")->fetchColumn() ?? 0;
 
-/* ════════════════════════════════════════
-   GRAPHIQUE 1 : Revenus par mois (12 derniers mois)
-   Source : table reservations (colonne montant)
-════════════════════════════════════════ */
+
+$resMoisCourant = (int) $pdo->query("
+    SELECT COUNT(*) FROM reservations
+    WHERE MONTH(date_reservation) = MONTH(NOW())
+      AND YEAR(date_reservation)  = YEAR(NOW())
+")->fetchColumn();
+
+$resMoisPrec = (int) $pdo->query("
+    SELECT COUNT(*) FROM reservations
+    WHERE MONTH(date_reservation) = MONTH(DATE_SUB(NOW(), INTERVAL 1 MONTH))
+      AND YEAR(date_reservation)  = YEAR(DATE_SUB(NOW(), INTERVAL 1 MONTH))
+")->fetchColumn();
+
+if ($resMoisPrec > 0) {
+    $trendRes      = round((($resMoisCourant - $resMoisPrec) / $resMoisPrec) * 100, 1);
+    $trendResSign  = $trendRes >= 0 ? '+' : '';
+    $trendResLabel = $trendResSign . $trendRes . '% vs mois préc.';
+} else {
+    $trendResLabel = $resMoisCourant > 0 ? 'Nouveau ce mois' : 'Aucune donnée';
+}
+
+$revMoisCourant = (float) $pdo->query("
+    SELECT COALESCE(SUM(montant), 0) FROM reservations
+    WHERE statut NOT IN ('annulé','annule','en attente')
+      AND MONTH(date_reservation) = MONTH(NOW())
+      AND YEAR(date_reservation)  = YEAR(NOW())
+")->fetchColumn();
+
+$revMoisPrec = (float) $pdo->query("
+    SELECT COALESCE(SUM(montant), 0) FROM reservations
+    WHERE statut NOT IN ('annulé','annule','en attente')
+      AND MONTH(date_reservation) = MONTH(DATE_SUB(NOW(), INTERVAL 1 MONTH))
+      AND YEAR(date_reservation)  = YEAR(DATE_SUB(NOW(), INTERVAL 1 MONTH))
+")->fetchColumn();
+
+if ($revMoisPrec > 0) {
+    $trendRev      = round((($revMoisCourant - $revMoisPrec) / $revMoisPrec) * 100, 1);
+    $trendRevSign  = $trendRev >= 0 ? '+' : '';
+    $trendRevLabel = $trendRevSign . $trendRev . '% vs mois préc.';
+} else {
+    $trendRevLabel = $revMoisCourant > 0 ? 'Nouveau ce mois' : 'Aucune donnée';
+}
+
 $chartQuery = $pdo->query("
     SELECT
-        DATE_FORMAT(date_reservation, '%Y-%m')  AS mois_key,
-        DATE_FORMAT(date_reservation, '%b %Y')  AS mois_label,
-        COALESCE(SUM(montant), 0)               AS total
+        DATE_FORMAT(date_reservation, '%Y-%m') AS mois_key,
+        DATE_FORMAT(date_reservation, '%b %Y') AS mois_label,
+        COALESCE(SUM(montant), 0)              AS total
     FROM reservations
-    WHERE
-        statut NOT IN ('annulé','annule')
-        AND date_reservation >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    WHERE statut NOT IN ('annulé','annule','en attente')
+      AND date_reservation >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
     GROUP BY mois_key, mois_label
     ORDER BY mois_key ASC
 ");
@@ -69,16 +103,25 @@ if (empty($months)) {
     $revenus = [0];
 }
 
-/* ════════════════════════════════════════
-   GRAPHIQUE 2 : Réservations par type_transport
-   Valeurs réelles en BDD : taxi, bus, cargo, location
-════════════════════════════════════════ */
+$revPrev = (float) $pdo->query("
+    SELECT COALESCE(SUM(montant), 0)
+    FROM reservations
+    WHERE statut NOT IN ('annulé','annule','en attente')
+      AND date_reservation >= DATE_SUB(NOW(), INTERVAL 24 MONTH)
+      AND date_reservation <  DATE_SUB(NOW(), INTERVAL 12 MONTH)
+")->fetchColumn();
+
+$revCurr     = array_sum($revenus);
+$tendancePct = $revPrev > 0
+    ? round((($revCurr - $revPrev) / $revPrev) * 100, 1)
+    : 0;
+
 $typesQuery = $pdo->query("
     SELECT
-        LOWER(TRIM(type_transport)) AS type,
-        COUNT(*)                    AS nb
+        LOWER(TRIM(COALESCE(type_transport, service))) AS type,
+        COUNT(*) AS nb
     FROM reservations
-    GROUP BY LOWER(TRIM(type_transport))
+    GROUP BY LOWER(TRIM(COALESCE(type_transport, service)))
 ");
 
 $countByType = ['taxi' => 0, 'bus' => 0, 'cargo' => 0, 'location' => 0];
@@ -94,7 +137,6 @@ $bus         = $countByType['bus'];
 $marchandise = $countByType['cargo'];
 $voyageurs   = $countByType['location'];
 
-/* Donut dynamique : exclure les types à 0 */
 $donutLabels = [];
 $donutData   = [];
 $donutColors = [];
@@ -117,14 +159,11 @@ if (empty($donutData)) {
     $donutColors = ['#e2e8f0'];
 }
 
-/* ════════════════════════════════════════
-   ACTIVITÉS RÉCENTES (vraies données)
-════════════════════════════════════════ */
 $activites = $pdo->query("
     SELECT
         id,
         user_name,
-        type_transport,
+        COALESCE(type_transport, service) AS type_transport,
         montant,
         statut,
         date_reservation
@@ -133,16 +172,21 @@ $activites = $pdo->query("
     LIMIT 5
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-/* ════════════════════════════════════════
-   RÉSERVATIONS RÉCENTES
-════════════════════════════════════════ */
 $reservations = $pdo->query("
-    SELECT * FROM reservations ORDER BY id DESC LIMIT 5
+    SELECT
+        id,
+        user_name,
+        COALESCE(type_transport, service) AS type_transport,
+        depart,
+        destination,
+        statut,
+        montant,
+        date_reservation
+    FROM reservations
+    ORDER BY id DESC
+    LIMIT 5
 ");
 
-/* ════════════════════════════════════════
-   TOP CHAUFFEURS (avec nb de courses)
-════════════════════════════════════════ */
 $topDrivers = $pdo->query("
     SELECT
         u.id,
@@ -150,35 +194,14 @@ $topDrivers = $pdo->query("
         u.email,
         COUNT(r.id) AS nb_courses
     FROM users u
-    LEFT JOIN reservations r ON r.chauffeur = u.nom
+    LEFT JOIN reservations r
+        ON r.chauffeur_id = u.id
+        OR r.chauffeur    = u.nom
     WHERE u.role = 'chauffeur'
     GROUP BY u.id, u.nom, u.email
     ORDER BY nb_courses DESC
     LIMIT 3
 ")->fetchAll(PDO::FETCH_ASSOC);
-
-/* ════════════════════════════════════════
-   VARIATION MOIS PRÉCÉDENT (tendances)
-════════════════════════════════════════ */
-function getPct($pdo, $col, $table, $where = '') {
-
-    $total = $pdo->query("SELECT COUNT(*) FROM $table")->fetchColumn();
-
-    $value = $pdo->query("
-        SELECT COALESCE($col, 0)
-        FROM $table
-        WHERE 1=1 $where
-    ")->fetchColumn();
-
-    if ($total == 0) {
-        return 0; // 👈 évite la division par zéro
-    }
-
-    return round(($value / $total) * 100, 2);
-}
-
-$trendRes = getPct($pdo, 'COUNT(*)', 'reservations');
-$trendRev = getPct($pdo, 'SUM(montant)', 'reservations', "AND statut NOT IN ('annulé','annule')");
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -194,11 +217,13 @@ $trendRev = getPct($pdo, 'SUM(montant)', 'reservations', "AND statut NOT IN ('an
 </head>
 <body>
 
-<?php include_once "sidebar.php"; ?>
+<?php
+include_once "sidebar.php";
+?>
 
 <div class="main-content">
 
-  <?php include_once "header.php"; ?>
+
 
   <!-- ── STATS ── -->
   <div class="row g-3 mb-4">
@@ -208,7 +233,7 @@ $trendRev = getPct($pdo, 'SUM(montant)', 'reservations', "AND statut NOT IN ('an
         <div class="stat-info">
           <h6>Réservations</h6>
           <div class="stat-number"><?= number_format($totalReservations, 0, ',', ' ') ?></div>
-          <div class="stat-trend"><?= $trendRes ?> ce mois</div>
+          <div class="stat-trend"><?= htmlspecialchars($trendResLabel) ?></div>
         </div>
       </div>
     </div>
@@ -217,8 +242,8 @@ $trendRev = getPct($pdo, 'SUM(montant)', 'reservations', "AND statut NOT IN ('an
         <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
         <div class="stat-info">
           <h6>Revenus</h6>
-          <div class="stat-number"><?= number_format($totalRevenus, 0, ',', ' ') ?> F</div>
-          <div class="stat-trend"><?= $trendRev ?> ce mois</div>
+         <div class="stat-number"><?= number_format($totalRevenus, 0, ',', ' ') ?> F</div>
+          <div class="stat-trend"><?= htmlspecialchars($trendRevLabel) ?></div>
         </div>
       </div>
     </div>
@@ -247,16 +272,27 @@ $trendRev = getPct($pdo, 'SUM(montant)', 'reservations', "AND statut NOT IN ('an
   <!-- ── CHARTS + ACTIVITÉS ── -->
   <div class="row g-3 mb-4">
 
-    <!-- Revenus Chart -->
-    <div class="col-lg-5">
-      <div class="card-box p-4 h-100">
-        <h5>Revenus Mensuels</h5>
-        <div class="chart-wrap">
-          <canvas id="revenusChart"></canvas>
-        </div>
+  <!-- Revenus Chart -->
+<div class="col-lg-5">
+  <div class="card-box p-4 h-100">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Revenus Mensuels</h5>
+      <div class="d-flex gap-1">
+        <button class="rv-filter btn btn-sm btn-outline-secondary" data-n="3">3 mois</button>
+        <button class="rv-filter btn btn-sm btn-outline-secondary" data-n="6">6 mois</button>
+        <button class="rv-filter btn btn-sm btn-outline-secondary active" data-n="12">12 mois</button>
       </div>
     </div>
-
+    <div class="d-flex gap-3 mb-3">
+      <div><small class="text-muted d-block">Total période</small><strong id="kpi-total">—</strong></div>
+      <div><small class="text-muted d-block">Meilleur mois</small><strong id="kpi-best">—</strong></div>
+      <div><small class="text-muted d-block">vs période préc.</small><strong id="kpi-trend">—</strong></div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="revenusChart"></canvas>
+    </div>
+  </div>
+</div>
     <!-- Donut -->
     <div class="col-lg-3">
       <div class="card-box p-4 h-100">
@@ -511,56 +547,117 @@ $trendRev = getPct($pdo, 'SUM(montant)', 'reservations', "AND statut NOT IN ('an
 </div><!-- /main-content -->
 
 <?php include_once "footer.php"; ?>
+<?php
+// TEST TEMPORAIRE - à retirer après vérification
+$months = [
+    'Jan 2026',
+    'Fév 2026',
+    'Mar 2026',
+    'Avr 2026',
+    'Mai 2026',
+    'Jun 2026'
+];
+
+$revenus = [
+    1200,
+    2500,
+    1800,
+    3200,
+    0,
+    5000
+];
+?>
 
 <script>
-/* ════════════════════════════════
-   DONNÉES 100% DYNAMIQUES depuis PHP
-════════════════════════════════ */
-const months      = <?= json_encode($months,       JSON_UNESCAPED_UNICODE) ?>;
+/* ══ DONNÉES PHP → JS ══ */
+const months      = <?= json_encode($months,      JSON_UNESCAPED_UNICODE) ?>;
 const revenus     = <?= json_encode($revenus) ?>;
-const donutLabels = <?= json_encode($donutLabels,  JSON_UNESCAPED_UNICODE) ?>;
+const tendancePct = <?= json_encode($tendancePct) ?>;
+const donutLabels = <?= json_encode($donutLabels, JSON_UNESCAPED_UNICODE) ?>;
 const donutData   = <?= json_encode($donutData) ?>;
 const donutColors = <?= json_encode($donutColors) ?>;
+const isDark      = matchMedia('(prefers-color-scheme:dark)').matches;
+
+/* ── Helpers ── */
+function fmt(v){ return v.toLocaleString('fr-SN') + ' F'; }
+
+function computeKPIs(data){
+  const total = data.reduce((a,b) => a+b, 0);
+  const best  = data.length ? Math.max(...data) : 0;
+  return { total, best };
+}
 
 /* ── Graphique 1 : Revenus mensuels ── */
-new Chart(document.getElementById('revenusChart'), {
-  type: 'line',
-  data: {
-    labels: months,
-    datasets: [{
-      label: 'Revenus (FCFA)',
-      data: revenus,
-      borderColor: '#16a34a',
-      backgroundColor: 'rgba(22,163,74,.08)',
-      fill: true,
-      tension: 0.4,
-      pointBackgroundColor: '#16a34a',
-      pointBorderColor: '#fff',
-      pointRadius: 5,
-      borderWidth: 3
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: true },
-      tooltip: {
-        callbacks: {
-          label: ctx => ' ' + ctx.parsed.y.toLocaleString('fr-SN') + ' FCFA'
+function buildChart(labels, data){
+  const { total, best } = computeKPIs(data);
+  document.getElementById('kpi-total').textContent = fmt(total);
+  document.getElementById('kpi-best').textContent  = fmt(best);
+  const sign = tendancePct >= 0 ? '+' : '';
+  document.getElementById('kpi-trend').innerHTML =
+    `<span class="badge ${tendancePct >= 0 ? 'bg-success' : 'bg-danger'}">${sign}${tendancePct}%</span>`;
+
+  return new Chart(document.getElementById('revenusChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Revenus (FCFA)',
+        data,
+        borderColor: '#16a34a',
+        backgroundColor: isDark ? 'rgba(22,163,74,.1)' : 'rgba(22,163,74,.07)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#16a34a',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        borderWidth: 2.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => '  ' + ctx.parsed.y.toLocaleString('fr-SN') + ' FCFA'
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 45, font: { size: 11 } } },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: v => {
+              if(v >= 1000000) return (v/1000000).toFixed(1) + 'M F';
+              if(v >= 1000)    return Math.round(v/1000) + 'k F';
+              return v + ' F';
+            }
+          }
         }
       }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: { callback: v => v.toLocaleString('fr-SN') + ' F' }
-      }
     }
-  }
+  });
+}
+
+let rvChart = buildChart(months, revenus);
+
+
+document.querySelectorAll('.rv-filter').forEach(btn => {
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.rv-filter').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const n = parseInt(this.dataset.n);
+    rvChart.destroy();
+    rvChart = buildChart(months.slice(-n), revenus.slice(-n));
+  });
 });
 
-/* ── Graphique 2 : Donut services ── */
+
 new Chart(document.getElementById('serviceChart'), {
   type: 'doughnut',
   data: {
@@ -586,7 +683,7 @@ new Chart(document.getElementById('serviceChart'), {
   }
 });
 
-/* ── Géolocalisation ── */
+
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(async pos => {
     try {

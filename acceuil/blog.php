@@ -791,7 +791,7 @@ $articles_populaires = [
                     </div>
                 </div>
 
-                <a href="#?slug=<?= urlencode($article_une['slug']) ?>" class="btn-lire">
+                <a href="article.php?slug=<?= urlencode($article_une['slug']) ?>" class="btn-lire">
                     Lire l'article
                     <i class="ti ti-arrow-right" aria-hidden="true"></i>
                 </a>

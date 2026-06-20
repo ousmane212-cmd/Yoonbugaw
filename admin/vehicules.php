@@ -17,9 +17,6 @@ if (!is_dir($UPLOAD_DIR)) mkdir($UPLOAD_DIR, 0755, true);
 
 $msg = $msgType = '';
 
-/* ══════════════════════════════════════════
-    ACTIONS POST
-══════════════════════════════════════════ */
 
 /* ── AJOUTER / MODIFIER véhicule ────────────────────────────────── */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -82,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $matricule,
                 $nom,
                 $photoPath,
-                $chauffeur, // peut être vide
+                $chauffeur, 
                 $type,
                 $couleur,
                 $statut
@@ -276,9 +273,7 @@ td{padding:12px 14px;font-size:13px;vertical-align:middle;white-space:nowrap}
 .empty-state{padding:50px 20px;text-align:center;color:var(--gray)}
 .empty-state i{font-size:40px;display:block;margin-bottom:10px}
 
-/* ══════════════════════════════════════════
-   MEDIA QUERIES - RESPONSIVE DESIGN
-══════════════════════════════════════════ */
+
 @media (max-width: 991px) {
   .main {
     padding: 75px 16px 20px; /* Décale le contenu sous le bouton burger */

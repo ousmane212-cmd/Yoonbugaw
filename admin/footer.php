@@ -1,16 +1,6 @@
-<?php
-/**
- * Fichier footer.php
- * Inclus à la fin de vos pages (ex: dashboard.php, vehicles.php, etc.)
- */
-?>
-        <!-- Fin du conteneur .main-content ou .main (fermeture ouverte dans le header) -->
-        </main> 
-    </div> <!-- Fin du layout/wrapper global si vous en utilisez un -->
 
-    <!-- ==========================================================================
-       FOOTER DU TABLEAU DE BORD
-       ========================================================================== -->
+        
+    
     <footer class="dashboard-footer">
         <div class="footer-container">
             <div class="footer-left">
@@ -26,7 +16,7 @@
         </div>
     </footer>
 
-    <!-- Styles CSS spécifiques au Footer (À intégrer à la fin de votre fichier CSS principal) -->
+  
     <style>
         .dashboard-footer {
             background-color: var(--white);
@@ -87,9 +77,9 @@
         }
     </style>
 
-    <!-- Vos scripts JS globaux (Optionnel) -->
+   
     <script>
-        // Exemple : Code pour fermer le modal si l'utilisateur clique sur la croix
+       
         document.addEventListener('DOMContentLoaded', function() {
             const closeBtn = document.querySelector('.form-close');
             const overlay = document.getElementById('form-overlay');

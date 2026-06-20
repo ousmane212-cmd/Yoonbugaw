@@ -76,7 +76,7 @@
     text-transform:uppercase;
 }
 
-/* Liens menu */
+
 .nav-link{
     font-weight:700;
     font-size:.9rem;
@@ -109,7 +109,7 @@
     border-radius:50px;
 }
 
-/* Bouton connexion */
+
 .btn-connexion{
     border:2px solid #d1d5db;
     border-radius:12px;
@@ -126,7 +126,7 @@
     transform:translateY(-2px);
 }
 
-/* Bouton inscription */
+
 .btn-inscrire{
     background:linear-gradient(
         135deg,
@@ -147,7 +147,7 @@
     box-shadow:0 12px 30px rgba(0,125,52,.35);
 }
 
-/* Menu mobile */
+
 .navbar-toggler{
     border:none!important;
     box-shadow:none!important;

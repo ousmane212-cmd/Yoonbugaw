@@ -16,11 +16,7 @@ function distance($lat1, $lon1, $lat2, $lon2) {
     return $earth * $c; // km
 }
 
-/*
-|-----------------------------------
-| 1. RÉCUPÉRER COURSE EN ATTENTE
-|-----------------------------------
-*/
+
 $res = $pdo->query("
     SELECT * FROM reservations
     WHERE chauffeur_id IS NULL
@@ -31,11 +27,7 @@ $res = $pdo->query("
 
 if (!$res) exit;
 
-/*
-|-----------------------------------
-| 2. CHAUFFEURS DISPONIBLES
-|-----------------------------------
-*/
+
 $drivers = $pdo->query("
     SELECT * FROM users
     WHERE role = 'chauffeur'
@@ -44,11 +36,6 @@ $drivers = $pdo->query("
 
 if (!$drivers) exit;
 
-/*
-|-----------------------------------
-| 3. SCORE INTELLIGENT
-|-----------------------------------
-*/
 $bestDriver = null;
 $bestScore = -INF;
 
@@ -61,17 +48,14 @@ foreach ($drivers as $d) {
 
     $dist = distance($clientLat, $clientLng, $d['lat'], $d['lng']);
 
-    // 🎯 SCORE INTELLIGENT
-    // plus proche = mieux
     $distanceScore = max(0, 100 - ($dist * 10));
 
     // ⭐ note chauffeur (sur 5)
     $noteScore = ($d['note'] ?? 5) * 20;
 
-    // 🟢 bonus disponibilité
     $availabilityScore = 50;
 
-    // ⏱ pénalité si loin
+
     $timePenalty = $dist * 5;
 
     $score = $distanceScore + $noteScore + $availabilityScore - $timePenalty;
@@ -86,19 +70,11 @@ if (!$bestDriver) {
     exit("Aucun chauffeur trouvé");
 }
 
-/*
-|-----------------------------------
-| 4. ESTIMATION TEMPS (simple)
-|-----------------------------------
-*/
+
 $speed = 40; // km/h moyenne ville
 $eta = round(($dist / $speed) * 60); // minutes
 
-/*
-|-----------------------------------
-| 5. ASSIGNATION
-|-----------------------------------
-*/
+
 $stmt = $pdo->prepare("
     UPDATE reservations
     SET chauffeur_id = :cid,
@@ -114,11 +90,7 @@ $stmt->execute([
     ':eta' => $eta
 ]);
 
-/*
-|-----------------------------------
-| 6. NOTIFICATION CHAUFFEUR
-|-----------------------------------
-*/
+
 $notif = $pdo->prepare("
     INSERT INTO notifications (user_id, titre, message)
     VALUES (:uid, :titre, :msg)

@@ -1,4 +1,4 @@
-   <?php
+<?php
 
 
 require_once "../config/database.php";
@@ -10,39 +10,8 @@ if (!isset($_SESSION['id'])) {
 
 $adminName = $_SESSION['nom'] ?? "Admin";
 
-$totalReservations = $pdo->query("SELECT COUNT(*) as total FROM reservations")->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-$totalRevenus = $pdo->query("SELECT SUM(montant) as total FROM paiements")->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-$totalChauffeurs = $pdo->query("SELECT COUNT(*) as total FROM users WHERE role='chauffeur'")->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-$totalVehicules = $pdo->query("SELECT COUNT(*) as total FROM vehicules WHERE statut='disponible'")->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
-
-$months = [];
-$revenus = [];
-$chartQuery = $pdo->query("
-    SELECT MONTH(date_paiement) as mois, SUM(montant) as total
-    FROM paiements
-    GROUP BY MONTH(date_paiement)
-    ORDER BY MONTH(date_paiement)
-");
-while ($row = $chartQuery->fetch(PDO::FETCH_ASSOC)) {
-    $months[] = date("M", mktime(0,0,0,$row['mois'],10));
-    $revenus[] = $row['total'];
-}
-
-$taxi        = $pdo->query("SELECT COUNT(*) as total FROM reservations WHERE type_transport='Taxi'")->fetch()['total'] ?? 0;
-$voyageurs   = $pdo->query("SELECT COUNT(*) as total FROM reservations WHERE type_transport='Voyageurs'")->fetch()['total'] ?? 0;
-$bus         = $pdo->query("SELECT COUNT(*) as total FROM reservations WHERE type_transport='Cars & Bus'")->fetch()['total'] ?? 0;
-$marchandise = $pdo->query("SELECT COUNT(*) as total FROM reservations WHERE type_transport='Marchandises'")->fetch()['total'] ?? 0;
-
-$reservations = $pdo->query("SELECT * FROM reservations ORDER BY id DESC LIMIT 5");
-
-$topDrivers = $pdo->query("SELECT * FROM users WHERE role='chauffeur' ORDER BY id DESC LIMIT 3");
-
-$notifCount = $pdo->query("SELECT COUNT(*) FROM notifications WHERE lu = 0")->fetchColumn();
 $totalPending = $pdo->query("
-    SELECT COUNT(*) 
+    SELECT COUNT(*)
     FROM reservations
     WHERE statut = 'en attente'
 ")->fetchColumn();

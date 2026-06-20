@@ -7,11 +7,7 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| ACCEPTER + ASSIGNER CHAUFFEUR
-|--------------------------------------------------------------------------
-*/
+
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST'
     && isset($_POST['reservation_id'])
@@ -92,11 +88,7 @@ if (
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| ACCEPTER LOCATION SANS CHAUFFEUR
-|--------------------------------------------------------------------------
-*/
+
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST'
     && isset($_POST['reservation_id'])
@@ -138,11 +130,7 @@ if (
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| REFUSER UNE RÉSERVATION
-|--------------------------------------------------------------------------
-*/
+
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST'
     && isset($_POST['refuser_id'])
@@ -184,11 +172,7 @@ if (
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| LISTE DES RÉSERVATIONS EN ATTENTE
-|--------------------------------------------------------------------------
-*/
+
 $notifications = $pdo->query("
     SELECT r.*, u.id AS client_user_id
     FROM reservations r
@@ -197,11 +181,7 @@ $notifications = $pdo->query("
     ORDER BY r.id DESC
 ");
 
-/*
-|--------------------------------------------------------------------------
-| STATISTIQUES
-|--------------------------------------------------------------------------
-*/
+
 $stats = $pdo->query("
     SELECT
         SUM(CASE WHEN statut = 'en attente' THEN 1 ELSE 0 END) AS attente,
@@ -222,102 +202,486 @@ $stats = $pdo->query("
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#f1f5f9;font-family:'DM Sans',sans-serif;color:#0f172a;min-height:100vh}
 
-.page-wrap{max-width:1000px;margin:0 auto;padding:24px 16px 60px}
+body{
+    background:#f1f5f9;
+    font-family:'DM Sans',sans-serif;
+    color:#0f172a;
+    min-height:100vh;
+}
+
+.page-wrap{
+    max-width:1000px;
+    margin:0 auto;
+    padding:24px 16px 60px;
+}
 
 /* TOPBAR */
-.admin-topbar{background:#1d4ed8;border-radius:18px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px;flex-wrap:wrap}
-.admin-topbar h2{font-size:20px;font-weight:700;color:#fff;margin:0;display:flex;align-items:center;gap:10px}
-.admin-topbar p{font-size:13px;color:rgba(255,255,255,.8);margin:0}
-.btn-back{background:rgba(255,255,255,.15);color:#fff;border:none;padding:9px 18px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px;transition:background .15s}
-.btn-back:hover{background:rgba(255,255,255,.25);color:#fff}
+.admin-topbar{
+    background:#1d4ed8;
+    border-radius:18px;
+    padding:20px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:28px;
+}
+
+.admin-topbar h2{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0;
+    color:#fff;
+    font-size:20px;
+    font-weight:700;
+}
+
+.admin-topbar p{
+    margin:0;
+    color:rgba(255,255,255,.8);
+    font-size:13px;
+}
+
+.btn-back{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:9px 18px;
+    background:rgba(255,255,255,.15);
+    border:none;
+    border-radius:12px;
+    color:#fff;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s;
+}
+
+.btn-back:hover{
+    background:rgba(255,255,255,.25);
+    color:#fff;
+}
 
 /* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-.stat-mini{background:#fff;border-radius:14px;border:.5px solid #e2e8f0;padding:14px 16px}
-.stat-mini .val{font-size:22px;font-weight:700;line-height:1}
-.stat-mini .lbl{font-size:11px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
-.stat-mini.s-wait .val{color:#d97706}
-.stat-mini.s-ok   .val{color:#16a34a}
-.stat-mini.s-no   .val{color:#dc2626}
-.stat-mini.s-all  .val{color:#1d4ed8}
+.stats-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:24px;
+}
+
+.stat-mini{
+    background:#fff;
+    border:.5px solid #e2e8f0;
+    border-radius:14px;
+    padding:14px 16px;
+}
+
+.stat-mini .val{
+    font-size:22px;
+    font-weight:700;
+    line-height:1;
+}
+
+.stat-mini .lbl{
+    margin-top:4px;
+    color:#64748b;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+
+.stat-mini.s-wait .val{color:#d97706;}
+.stat-mini.s-ok .val{color:#16a34a;}
+.stat-mini.s-no .val{color:#dc2626;}
+.stat-mini.s-all .val{color:#1d4ed8;}
 
 /* FLASH */
-.flash{border:none;border-radius:14px;padding:14px 18px;font-size:14px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.flash.ok{background:#f0fdf4;color:#166534;border-left:4px solid #16a34a}
+.flash{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+    padding:14px 18px;
+    border:none;
+    border-radius:14px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.flash.ok{
+    background:#f0fdf4;
+    color:#166534;
+    border-left:4px solid #16a34a;
+}
 
 /* CARD */
-.res-card{background:#fff;border-radius:20px;border:.5px solid #e2e8f0;margin-bottom:20px;overflow:hidden;transition:box-shadow .2s}
-.res-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.07)}
-.res-card-head{display:flex;align-items:center;gap:14px;padding:18px 20px;border-bottom:.5px solid #f1f5f9}
-.res-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.res-icon.taxi    {background:#fef9c3;color:#854d0e}
-.res-icon.bus     {background:#dbeafe;color:#1e40af}
-.res-icon.cargo   {background:#fee2e2;color:#b91c1c}
-.res-icon.location{background:#f0fdf4;color:#166534}
-.res-id{font-size:16px;font-weight:700;color:#0f172a}
-.res-date{font-size:12px;color:#64748b;margin-top:2px}
-.badge-wait{margin-left:auto;background:#fef3c7;color:#92400e;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.res-card{
+    background:#fff;
+    border:.5px solid #e2e8f0;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:20px;
+    transition:box-shadow .2s;
+}
 
-/* LOCATION BADGE : avec/sans chauffeur */
-.loc-badge{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin-bottom:12px}
-.loc-badge.avec {background:#f0fdf4;color:#166534;border:.5px solid #bbf7d0}
-.loc-badge.sans {background:#f8fafc;color:#475569;border:.5px solid #cbd5e1}
+.res-card:hover{
+    box-shadow:0 6px 24px rgba(0,0,0,.07);
+}
 
-.res-body{padding:18px 20px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.info-cell{background:#f8fafc;border-radius:10px;padding:10px 12px}
-.info-cell .lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
-.info-cell .val{font-size:14px;font-weight:600;color:#0f172a}
-.info-cell.full{grid-column:1/-1}
-.montant-badge{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;color:#1d4ed8;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:700;margin-bottom:16px}
+.res-card-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:18px 20px;
+    border-bottom:.5px solid #f1f5f9;
+}
 
-/* SÉPARATEUR avec/sans chauffeur dans les actions */
-.loc-section-title{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.loc-section-title i{font-size:14px}
+.res-icon{
+    width:52px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    border-radius:14px;
+    font-size:22px;
+}
 
-.action-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
-.form-select-styled{height:48px;border-radius:12px;border:.5px solid #cbd5e1;font-size:14px;padding:0 14px;flex:1;min-width:200px;background:#fff;color:#0f172a;cursor:pointer}
-.form-select-styled:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.res-icon.taxi{
+    background:#fef9c3;
+    color:#854d0e;
+}
 
-.btn-accept{height:48px;padding:0 20px;border-radius:12px;background:#16a34a;color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s;white-space:nowrap}
-.btn-accept:hover{background:#15803d}
+.res-icon.bus{
+    background:#dbeafe;
+    color:#1e40af;
+}
 
-/* Bouton confirmer sans chauffeur */
-.btn-accept-sans{height:48px;padding:0 20px;border-radius:12px;background:#0ea5e9;color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s;white-space:nowrap}
-.btn-accept-sans:hover{background:#0284c7}
+.res-icon.cargo{
+    background:#fee2e2;
+    color:#b91c1c;
+}
 
-.btn-refuse{height:48px;padding:0 16px;border-radius:12px;background:#fff;color:#dc2626;border:.5px solid #fecaca;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s}
-.btn-refuse:hover{background:#fef2f2}
+.res-icon.location{
+    background:#f0fdf4;
+    color:#166534;
+}
 
-/* Divider entre avec/sans chauffeur */
-.or-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:#94a3b8;font-size:12px;font-weight:600}
-.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.res-id{
+    color:#0f172a;
+    font-size:16px;
+    font-weight:700;
+}
 
-/* Refuse collapse */
-.refuse-form{display:none;margin-top:12px;padding:14px;background:#fff5f5;border-radius:12px;border:.5px solid #fecaca}
-.refuse-form textarea{width:100%;border-radius:10px;border:.5px solid #fecaca;padding:10px;font-size:13px;resize:vertical;font-family:inherit}
-.refuse-form textarea:focus{outline:none;border-color:#f87171}
-.btn-refuse-confirm{margin-top:10px;padding:8px 18px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer}
+.res-date{
+    margin-top:2px;
+    color:#64748b;
+    font-size:12px;
+}
+
+.badge-wait{
+    margin-left:auto;
+    padding:5px 14px;
+    background:#fef3c7;
+    border-radius:20px;
+    color:#92400e;
+    font-size:12px;
+    font-weight:600;
+    white-space:nowrap;
+}
+
+/* LOCATION BADGE */
+.loc-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:12px;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.loc-badge.avec{
+    background:#f0fdf4;
+    border:.5px solid #bbf7d0;
+    color:#166534;
+}
+
+.loc-badge.sans{
+    background:#f8fafc;
+    border:.5px solid #cbd5e1;
+    color:#475569;
+}
+
+.res-body{
+    padding:18px 20px;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.info-cell{
+    background:#f8fafc;
+    border-radius:10px;
+    padding:10px 12px;
+}
+
+.info-cell.full{
+    grid-column:1/-1;
+}
+
+.info-cell .lbl{
+    margin-bottom:3px;
+    color:#94a3b8;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+
+.info-cell .val{
+    color:#0f172a;
+    font-size:14px;
+    font-weight:600;
+}
+
+.montant-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:16px;
+    padding:6px 12px;
+    background:#eff6ff;
+    border-radius:8px;
+    color:#1d4ed8;
+    font-size:14px;
+    font-weight:700;
+}
+
+/* SECTION TITLE */
+.loc-section-title{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:10px;
+    color:#64748b;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+.loc-section-title i{
+    font-size:14px;
+}
+
+/* ACTIONS */
+.action-row{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.form-select-styled{
+    flex:1;
+    min-width:200px;
+    height:48px;
+    padding:0 14px;
+    background:#fff;
+    border:.5px solid #cbd5e1;
+    border-radius:12px;
+    color:#0f172a;
+    font-size:14px;
+    cursor:pointer;
+}
+
+.form-select-styled:focus{
+    outline:none;
+    border-color:#3b82f6;
+    box-shadow:0 0 0 3px rgba(59,130,246,.15);
+}
+
+.btn-accept{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    height:48px;
+    padding:0 20px;
+    background:#16a34a;
+    border:none;
+    border-radius:12px;
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s;
+}
+
+.btn-accept:hover{
+    background:#15803d;
+}
+
+.btn-accept-sans{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    height:48px;
+    padding:0 20px;
+    background:#0ea5e9;
+    border:none;
+    border-radius:12px;
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s;
+}
+
+.btn-accept-sans:hover{
+    background:#0284c7;
+}
+
+.btn-refuse{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    height:48px;
+    padding:0 16px;
+    background:#fff;
+    border:.5px solid #fecaca;
+    border-radius:12px;
+    color:#dc2626;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s;
+}
+
+.btn-refuse:hover{
+    background:#fef2f2;
+}
+
+/* DIVIDER */
+.or-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:14px 0;
+    color:#94a3b8;
+    font-size:12px;
+    font-weight:600;
+}
+
+.or-divider::before,
+.or-divider::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:#e2e8f0;
+}
+
+/* REFUSE */
+.refuse-form{
+    display:none;
+    margin-top:12px;
+    padding:14px;
+    background:#fff5f5;
+    border:.5px solid #fecaca;
+    border-radius:12px;
+}
+
+.refuse-form textarea{
+    width:100%;
+    padding:10px;
+    border:.5px solid #fecaca;
+    border-radius:10px;
+    resize:vertical;
+    font-family:inherit;
+    font-size:13px;
+}
+
+.refuse-form textarea:focus{
+    outline:none;
+    border-color:#f87171;
+}
+
+.btn-refuse-confirm{
+    margin-top:10px;
+    padding:8px 18px;
+    background:#dc2626;
+    border:none;
+    border-radius:10px;
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+}
 
 /* EMPTY */
-.empty-state{text-align:center;padding:60px 20px;color:#94a3b8}
-.empty-state i{font-size:56px;display:block;margin-bottom:14px;opacity:.4}
-.empty-state h4{font-size:17px;font-weight:700;color:#64748b;margin-bottom:6px}
+.empty-state{
+    padding:60px 20px;
+    text-align:center;
+    color:#94a3b8;
+}
 
-@media(max-width:640px){
-  .stats-row{grid-template-columns:1fr 1fr}
-  .info-grid{grid-template-columns:1fr}
-  .info-cell.full{grid-column:1}
-  .action-row{flex-direction:column;align-items:stretch}
-  .btn-accept,.btn-accept-sans,.btn-refuse{justify-content:center}
+.empty-state i{
+    display:block;
+    margin-bottom:14px;
+    font-size:56px;
+    opacity:.4;
+}
+
+.empty-state h4{
+    margin-bottom:6px;
+    color:#64748b;
+    font-size:17px;
+    font-weight:700;
+}
+
+/* RESPONSIVE */
+@media (max-width:640px){
+
+    .stats-row{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .info-grid{
+        grid-template-columns:1fr;
+    }
+
+    .info-cell.full{
+        grid-column:1;
+    }
+
+    .action-row{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .btn-accept,
+    .btn-accept-sans,
+    .btn-refuse{
+        justify-content:center;
+    }
 }
 </style>
 </head>
 <body>
 
 <?php include_once "sidebar.php"; ?>
+<div class="main-content">
 <?php include_once "header.php"; ?>
 
 <div class="page-wrap">
@@ -545,6 +909,7 @@ body{background:#f1f5f9;font-family:'DM Sans',sans-serif;color:#0f172a;min-heigh
     </div>
   <?php endif; ?>
 
+</div>
 </div>
 
 <script>

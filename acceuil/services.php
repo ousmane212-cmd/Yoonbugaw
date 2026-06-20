@@ -40,9 +40,7 @@
       </p>
 
       <div class="hero-cta">
-    <button class="btn-primary-gold" onclick="window.location.href='../auth/login.php'">
-  Réserver maintenant
-</button>
+        <button class="btn-primary-gold">Réserver maintenant</button>
         <button class="btn-ghost-white">Découvrir nos services</button>
       </div>
 
@@ -147,7 +145,7 @@
           <li>Suivi GPS en temps réel</li>
           <li>Notation bidirectionnelle passager / chauffeur</li>
         </ul>
-        <button class="btn-card" onclick="window.location.href='../auth/login.php'">
+        <button class="btn-card">
           Trouver un trajet
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -169,7 +167,7 @@
           <li>Flotte de 50+ véhicules disponibles</li>
           <li>Chauffeur professionnel inclus</li>
         </ul>
-        <button class="btn-card" onclick="window.location.href='../auth/login.php'">
+        <button class="btn-card">
           Demander un devis
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -191,7 +189,7 @@
           <li>Tarif affiché avant confirmation</li>
           <li>Véhicule climatisé et propre</li>
         </ul>
-        <button class="btn-card" onclick="window.location.href='../auth/login.php'">
+        <button class="btn-card">
           Commander un taxi
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -213,7 +211,7 @@
           <li>Livraison J+1 disponible</li>
           <li>Notification SMS à la livraison</li>
         </ul>
-        <button class="btn-card" onclick="window.location.href='../auth/login.php'">
+        <button class="btn-card">
           Expédier un colis
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -507,11 +505,11 @@
     </p>
 
     <div class="cta-buttons">
-      <a href="../auth/traitement_inscription.php" class="btn-cta-gold">
+      <a href="#" class="btn-cta-gold">
         <i class="fa-solid fa-user-plus" style="margin-right:8px;"></i>
         Créer un compte gratuit
       </a>
-      <a href="../auth/login.php" class="btn-cta-outline">
+      <a href="#" class="btn-cta-outline">
         Voir nos tarifs
         <i class="fa-solid fa-arrow-right" style="margin-left:8px;"></i>
       </a>
