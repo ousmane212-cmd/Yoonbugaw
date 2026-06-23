@@ -94,8 +94,6 @@ $stmt = $pdo->prepare('SELECT COUNT(*) FROM reservations WHERE chauffeur_id = ? 
 $stmt->execute([$chauffeurId]);
 $totalEvals = (int) $stmt->fetchColumn();
 
-
-/* Courses en attente */
 $stmt = $pdo->prepare(
     "SELECT r.id, r.depart, r.destination, r.montant, r.type_transport, r.user_name,
             r.date_reservation, r.heure_depart, r.date_depart, r.mode_paiement,
